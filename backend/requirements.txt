@@ -1,0 +1,11 @@
+# Core API dependencies - enough to run the backend.
+# The backend degrades gracefully (clearly labelled fallback mode) without the
+# optional ML packages in requirements-ml.txt.
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic
+python-dotenv
+python-multipart
+Pillow
+numpy

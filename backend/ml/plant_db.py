@@ -1,0 +1,82 @@
+"""Plant reference data used for zero-shot plant identification and generic
+care recommendations when an image does not match one of the 38 trained
+PlantVillage disease classes.
+
+The keys are simple lowercase plant names used as CLIP candidate labels.
+"""
+
+from __future__ import annotations
+
+PLANT_DB: dict[str, dict] = {
+    "mango": {"scientific_name": "Mangifera indica", "category": "Fruit Tree", "sunlight": "Full Sun", "water": "Moderate, let dry between waterings", "temperature": "25-35°C", "soil": "Deep, well-drained", "disease": "Anthracnose / Powdery Mildew"},
+    "banana": {"scientific_name": "Musa", "category": "Herbaceous Plant", "sunlight": "Full Sun", "water": "High, keep soil moist", "temperature": "26-30°C", "soil": "Rich, well-draining", "disease": "Panama Disease / Sigatoka"},
+    "lemon": {"scientific_name": "Citrus limon", "category": "Fruit Tree", "sunlight": "Full Sun", "water": "Moderate to High", "temperature": "21-30°C", "soil": "Slightly acidic, well-draining", "disease": "Citrus Canker"},
+    "papaya": {"scientific_name": "Carica papaya", "category": "Fruit Tree", "sunlight": "Full Sun", "water": "Moderate", "temperature": "21-32°C", "soil": "Loamy, well-drained", "disease": "Papaya Ringspot Virus"},
+    "guava": {"scientific_name": "Psidium guajava", "category": "Fruit Tree", "sunlight": "Full Sun", "water": "Moderate", "temperature": "23-28°C", "soil": "Adaptable, well-draining", "disease": "Guava Wilt"},
+    "apple": {"scientific_name": "Malus domestica", "category": "Fruit Tree", "sunlight": "Full Sun", "water": "Moderate", "temperature": "15-24°C", "soil": "Loamy, well-drained", "disease": "Apple Scab"},
+    "orange": {"scientific_name": "Citrus × sinensis", "category": "Fruit Tree", "sunlight": "Full Sun", "water": "Moderate", "temperature": "15-29°C", "soil": "Sandy loam, well-drained", "disease": "Citrus Greening"},
+    "grape": {"scientific_name": "Vitis vinifera", "category": "Vine", "sunlight": "Full Sun", "water": "Low to Moderate", "temperature": "15-30°C", "soil": "Deep, well-drained", "disease": "Powdery Mildew / Downy Mildew"},
+    "pomegranate": {"scientific_name": "Punica granatum", "category": "Fruit Shrub", "sunlight": "Full Sun", "water": "Low to Moderate", "temperature": "25-32°C", "soil": "Well-drained, adaptable", "disease": "Bacterial Blight"},
+    "watermelon": {"scientific_name": "Citrullus lanatus", "category": "Fruit Vine", "sunlight": "Full Sun", "water": "High", "temperature": "21-32°C", "soil": "Sandy loam, well-drained", "disease": "Fusarium Wilt"},
+    "strawberry": {"scientific_name": "Fragaria × ananassa", "category": "Berry", "sunlight": "Full Sun", "water": "High, consistent", "temperature": "15-27°C", "soil": "Slightly acidic, well-drained", "disease": "Leaf Spot / Botrytis Rot"},
+    "tomato": {"scientific_name": "Solanum lycopersicum", "category": "Vegetable", "sunlight": "Full Sun", "water": "Moderate, consistent", "temperature": "21-29°C", "soil": "Loamy, rich", "disease": "Early Blight / Late Blight"},
+    "potato": {"scientific_name": "Solanum tuberosum", "category": "Root Vegetable", "sunlight": "Full Sun", "water": "Moderate", "temperature": "15-20°C", "soil": "Loose, well-drained", "disease": "Late Blight"},
+    "onion": {"scientific_name": "Allium cepa", "category": "Bulb Vegetable", "sunlight": "Full Sun", "water": "Moderate", "temperature": "13-24°C", "soil": "Loose, well-drained", "disease": "Downy Mildew / Purple Blotch"},
+    "garlic": {"scientific_name": "Allium sativum", "category": "Bulb Vegetable", "sunlight": "Full Sun", "water": "Moderate", "temperature": "13-24°C", "soil": "Rich, well-drained", "disease": "White Rot"},
+    "ginger": {"scientific_name": "Zingiber officinale", "category": "Rhizome", "sunlight": "Partial Sun", "water": "High, humid", "temperature": "22-28°C", "soil": "Rich, loamy", "disease": "Rhizome Rot"},
+    "mint": {"scientific_name": "Mentha", "category": "Herb", "sunlight": "Partial to Full Sun", "water": "High, keep moist", "temperature": "15-21°C", "soil": "Rich, moist", "disease": "Mint Rust"},
+    "coriander": {"scientific_name": "Coriandrum sativum", "category": "Herb", "sunlight": "Full Sun", "water": "Moderate", "temperature": "15-25°C", "soil": "Well-drained", "disease": "Powdery Mildew"},
+    "basil": {"scientific_name": "Ocimum basilicum", "category": "Herb", "sunlight": "Full Sun", "water": "Moderate to High", "temperature": "21-32°C", "soil": "Rich, moist, well-draining", "disease": "Downy Mildew / Fusarium Wilt"},
+    "spinach": {"scientific_name": "Spinacia oleracea", "category": "Leafy Vegetable", "sunlight": "Partial to Full Sun", "water": "Moderate, consistent", "temperature": "10-21°C", "soil": "Rich, loamy", "disease": "Downy Mildew"},
+    "cabbage": {"scientific_name": "Brassica oleracea var. capitata", "category": "Leafy Vegetable", "sunlight": "Full Sun", "water": "High, consistent", "temperature": "15-20°C", "soil": "Rich, well-drained", "disease": "Clubroot / Black Rot"},
+    "cauliflower": {"scientific_name": "Brassica oleracea var. botrytis", "category": "Vegetable", "sunlight": "Full Sun", "water": "High, consistent", "temperature": "15-20°C", "soil": "Rich, moisture-retentive", "disease": "Clubroot / Downy Mildew"},
+    "carrot": {"scientific_name": "Daucus carota", "category": "Root Vegetable", "sunlight": "Full Sun", "water": "Moderate, consistent", "temperature": "15-21°C", "soil": "Deep, loose, sandy", "disease": "Alternaria Leaf Blight"},
+    "radish": {"scientific_name": "Raphanus sativus", "category": "Root Vegetable", "sunlight": "Full Sun", "water": "Moderate", "temperature": "10-21°C", "soil": "Loose, well-drained", "disease": "Clubroot"},
+    "chilli": {"scientific_name": "Capsicum annuum", "category": "Vegetable", "sunlight": "Full Sun", "water": "Moderate", "temperature": "21-32°C", "soil": "Rich, well-drained", "disease": "Leaf Curl Virus / Anthracnose"},
+    "capsicum": {"scientific_name": "Capsicum annuum", "category": "Vegetable", "sunlight": "Full Sun", "water": "Moderate", "temperature": "21-29°C", "soil": "Loamy, well-drained", "disease": "Powdery Mildew / Blossom End Rot"},
+    "eggplant": {"scientific_name": "Solanum melongena", "category": "Vegetable", "sunlight": "Full Sun", "water": "Moderate", "temperature": "21-32°C", "soil": "Rich, well-drained", "disease": "Phomopsis Blight / Verticillium Wilt"},
+    "rose": {"scientific_name": "Rosa", "category": "Flower", "sunlight": "Full Sun", "water": "Moderate", "temperature": "15-25°C", "soil": "Rich, loamy", "disease": "Black Spot / Powdery Mildew"},
+    "marigold": {"scientific_name": "Tagetes", "category": "Flower", "sunlight": "Full Sun", "water": "Moderate", "temperature": "20-30°C", "soil": "Well-drained", "disease": "Botrytis Blight"},
+    "jasmine": {"scientific_name": "Jasminum", "category": "Flower / Vine", "sunlight": "Full to Partial Sun", "water": "Moderate", "temperature": "20-30°C", "soil": "Well-drained", "disease": "Rust / Blight"},
+    "sunflower": {"scientific_name": "Helianthus", "category": "Flower", "sunlight": "Full Sun", "water": "Moderate to Low", "temperature": "21-26°C", "soil": "Adaptable, well-draining", "disease": "Rust / Powdery Mildew"},
+    "aloe vera": {"scientific_name": "Aloe barbadensis miller", "category": "Succulent", "sunlight": "Bright, indirect light", "water": "Low, allow to dry out", "temperature": "13-27°C", "soil": "Sandy, highly well-draining", "disease": "Root Rot / Aloe Rust"},
+    "snake plant": {"scientific_name": "Dracaena trifasciata", "category": "Succulent", "sunlight": "Low to Bright Indirect", "water": "Low, allow to dry completely", "temperature": "15-30°C", "soil": "Sandy, well-draining", "disease": "Root Rot"},
+    "money plant": {"scientific_name": "Epipremnum aureum", "category": "Houseplant / Vine", "sunlight": "Low to Bright Indirect", "water": "Moderate", "temperature": "15-30°C", "soil": "Well-draining potting mix", "disease": "Root Rot / Leaf Spot"},
+    "tulsi": {"scientific_name": "Ocimum tenuiflorum", "category": "Herb / Sacred Plant", "sunlight": "Full Sun", "water": "Moderate", "temperature": "20-30°C", "soil": "Rich, well-draining", "disease": "Downy Mildew / Root Rot"},
+    "neem": {"scientific_name": "Azadirachta indica", "category": "Tree", "sunlight": "Full Sun", "water": "Low to Moderate", "temperature": "25-35°C", "soil": "Adaptable, deep", "disease": "Twig Blight"},
+    "bamboo": {"scientific_name": "Bambusoideae", "category": "Grass / Plant", "sunlight": "Partial to Full Sun", "water": "High", "temperature": "Varies widely", "soil": "Rich, moist", "disease": "Bamboo Mosaic Virus"},
+    "palm": {"scientific_name": "Arecaceae", "category": "Tree / Plant", "sunlight": "Bright Indirect to Full Sun", "water": "Moderate", "temperature": "20-35°C", "soil": "Well-draining", "disease": "Lethal Yellowing / Bud Rot"},
+    "fern": {"scientific_name": "Polypodiopsida", "category": "Fern", "sunlight": "Low to Bright Indirect", "water": "High, keep humid", "temperature": "15-25°C", "soil": "Rich, moisture-retentive", "disease": "Fungal Leaf Spot"},
+    "cactus": {"scientific_name": "Cactaceae", "category": "Succulent", "sunlight": "Full Sun", "water": "Very Low", "temperature": "18-32°C", "soil": "Sandy, extremely well-draining", "disease": "Root Rot"},
+    "succulent": {"scientific_name": "Various (Crassulaceae etc.)", "category": "Succulent", "sunlight": "Bright light", "water": "Low", "temperature": "15-30°C", "soil": "Sandy, well-draining", "disease": "Root Rot / Powdery Mildew"},
+    "orchid": {"scientific_name": "Orchidaceae", "category": "Flower", "sunlight": "Bright Indirect", "water": "Moderate, allow to dry slightly", "temperature": "15-30°C", "soil": "Orchid bark or sphagnum moss", "disease": "Botrytis / Root Rot"},
+    "lily": {"scientific_name": "Lilium", "category": "Flower", "sunlight": "Full Sun to Partial Shade", "water": "Moderate", "temperature": "15-25°C", "soil": "Rich, well-drained", "disease": "Botrytis Blight / Lily Mosaic Virus"},
+    "tulip": {"scientific_name": "Tulipa", "category": "Flower", "sunlight": "Full Sun", "water": "Moderate", "temperature": "10-20°C", "soil": "Well-drained, sandy", "disease": "Tulip Fire (Botrytis)"},
+    "daisy": {"scientific_name": "Bellis perennis", "category": "Flower", "sunlight": "Full Sun", "water": "Moderate", "temperature": "15-25°C", "soil": "Well-draining", "disease": "Powdery Mildew / Rust"},
+    "hibiscus": {"scientific_name": "Hibiscus", "category": "Flower / Shrub", "sunlight": "Full Sun", "water": "High", "temperature": "20-32°C", "soil": "Rich, moist, well-draining", "disease": "Leaf Spot / Rust"},
+    "lotus": {"scientific_name": "Nelumbo nucifera", "category": "Aquatic Plant", "sunlight": "Full Sun", "water": "Aquatic", "temperature": "20-35°C", "soil": "Heavy clay / aquatic soil", "disease": "Leaf Rot"},
+    "wheat": {"scientific_name": "Triticum", "category": "Crop", "sunlight": "Full Sun", "water": "Moderate", "temperature": "15-25°C", "soil": "Well-drained loam", "disease": "Wheat Rust (Stem/Leaf)"},
+    "rice": {"scientific_name": "Oryza sativa", "category": "Crop", "sunlight": "Full Sun", "water": "Aquatic / High", "temperature": "20-35°C", "soil": "Clay, waterlogged", "disease": "Rice Blast"},
+    "corn": {"scientific_name": "Zea mays", "category": "Crop", "sunlight": "Full Sun", "water": "Moderate to High", "temperature": "20-30°C", "soil": "Rich, well-drained", "disease": "Corn Smut / Rust"},
+    "cotton": {"scientific_name": "Gossypium", "category": "Crop", "sunlight": "Full Sun", "water": "Moderate", "temperature": "25-35°C", "soil": "Deep, well-drained", "disease": "Cotton Leaf Curl Virus / Boll Rot"},
+    "sugarcane": {"scientific_name": "Saccharum officinarum", "category": "Crop", "sunlight": "Full Sun", "water": "High", "temperature": "20-35°C", "soil": "Rich, moisture-retentive", "disease": "Red Rot / Smut"},
+    "coffee": {"scientific_name": "Coffea", "category": "Crop", "sunlight": "Partial to Full Sun", "water": "Moderate", "temperature": "15-24°C", "soil": "Rich, volcanic or loamy", "disease": "Coffee Leaf Rust"},
+}
+
+# Map the 38 PlantVillage crops to reference-database keys for care info.
+PLANTVILLAGE_CROP_TO_PLANT: dict[str, str] = {
+    "Apple": "apple",
+    "Blueberry": "strawberry",
+    "Cherry": "apple",
+    "Corn": "corn",
+    "Grape": "grape",
+    "Orange": "orange",
+    "Peach": "apple",
+    "Pepper, bell": "capsicum",
+    "Potato": "potato",
+    "Raspberry": "strawberry",
+    "Soybean": "wheat",
+    "Squash": "capsicum",
+    "Strawberry": "strawberry",
+    "Tomato": "tomato",
+}
