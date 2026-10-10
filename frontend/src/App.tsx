@@ -7,8 +7,6 @@ import AddPlant from './pages/AddPlant';
 import Plants from './pages/Plants';
 import Assistant from './pages/Assistant';
 import Health from './pages/Health';
-import Community from './pages/Community';
-import Marketplace from './pages/Marketplace';
 import Watering from './pages/Watering';
 import Insights from './pages/Insights';
 import Settings from './pages/Settings';
@@ -27,8 +25,6 @@ function App() {
           <Route path="scanner/result/:id" element={<ScannerResult />} />
           <Route path="assistant" element={<Assistant />} />
           <Route path="health" element={<Health />} />
-          <Route path="community" element={<Community />} />
-          <Route path="marketplace" element={<Marketplace />} />
           <Route path="watering" element={<Watering />} />
           <Route path="insights" element={<Insights />} />
           <Route path="settings" element={<Settings />} />

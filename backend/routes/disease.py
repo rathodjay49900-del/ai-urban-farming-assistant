@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends
 from sqlalchemy.orm import Session
 from typing import List, Optional
+import asyncio
 
 import models
 import schemas
@@ -38,7 +39,9 @@ async def validate_image(file: UploadFile = File(...), simulate_invalid: bool = 
             "confidence": 0.98,
             "message": "This image does not appear to contain a plant or farming-related subject.",
         }
-    return gatekeeper.validate(contents)
+    # CLIP + PIL are blocking/CPU-heavy: run in a thread so one slow scan
+    # never blocks the whole event loop for other requests.
+    return await asyncio.to_thread(gatekeeper.validate, contents)
 
 
 def _rejected(message: str, confidence: float = 0.0) -> dict:
@@ -69,7 +72,7 @@ async def analyze_disease(
     if simulate_invalid:
         return _rejected("This image does not appear to contain a plant or farming-related subject.")
 
-    result = predictor.predict(contents)
+    result = await asyncio.to_thread(predictor.predict, contents)
 
     if not result["is_plant_related"]:
         return _rejected(result.get("message") or "Please upload a clear plant or leaf image.",

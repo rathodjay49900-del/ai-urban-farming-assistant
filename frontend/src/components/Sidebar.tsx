@@ -1,15 +1,13 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Leaf, ScanSearch, Droplets, Activity, Bot, Settings, HelpCircle, User, Users, ShoppingCart } from 'lucide-react';
+import { Home, Leaf, ScanSearch, Droplets, Activity, Bot, Settings, HelpCircle, User } from 'lucide-react';
 
 const navItems = [
   { icon: Home, label: 'Dashboard', path: '/dashboard' },
   { icon: Leaf, label: 'My Plants', path: '/plants' },
   { icon: ScanSearch, label: 'Disease Scanner', path: '/scanner' },
-  { icon: Users, label: 'Crop Swap', path: '/community' },
   { icon: Droplets, label: 'Watering', path: '/watering' },
   { icon: Activity, label: 'Plant Health', path: '/health' },
   { icon: Bot, label: 'AI Assistant', path: '/assistant' },
-  { icon: ShoppingCart, label: 'Marketplace', path: '/marketplace' },
 ];
 
 const secondaryItems = [

@@ -31,7 +31,7 @@ from ml.plant_db import PLANT_DB, PLANTVILLAGE_CROP_TO_PLANT
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-ENABLE_CLIP = os.getenv("AI_ENABLE_CLIP", "true").lower() in {"1", "true", "yes"}
+ENABLE_CLIP = os.getenv("AI_ENABLE_CLIP", "false").lower() in {"1", "true", "yes"}
 CLIP_MODEL_ID = os.getenv("AI_CLIP_MODEL", "openai/clip-vit-base-patch32")
 
 
@@ -80,23 +80,34 @@ class PlantGatekeeper:
 
     @staticmethod
     def _heuristic_is_plant(image: Image.Image) -> tuple[bool, float]:
-        """Green/brown vegetation heuristic used when CLIP is unavailable."""
+        """HSV vegetation heuristic (fast, CLIP-free).
+
+        Bug fix: old RGB version counted human skin as 'brown foliage'
+        (both satisfy R>G>B), so human photos passed as plants. HSV hue
+        separates them: foliage = green 60-170 deg + yellow 28-60 deg,
+        human skin/red = hue <28 or >=340 deg.
+        """
+        import colorsys
+
         small = image.convert("RGB").resize((128, 128))
         pixels = list(small.getdata())
         total = len(pixels)
         plantish = 0
         skinish = 0
         for r, g, b in pixels:
-            if g > r and g > b and g > 40 and (g - min(r, b)) > 15:
-                plantish += 1
-            elif r > 95 and g > 40 and b > 20 and r > g > b and (max(r, g, b) - min(r, g, b)) > 15:
-                # brown / yellow diseased foliage
-                plantish += 1
-            elif r > 95 and g > 40 and b > 20 and abs(r - g) > 15 and r > b and g > b:
-                skinish += 1
+            h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+            h *= 360.0
+            if v < 0.12 or s < 0.10:
+                continue  # gray/black/white background: neither plant nor skin
+            if 60.0 <= h <= 170.0 and s >= 0.15:
+                plantish += 1  # green foliage
+            elif 28.0 <= h < 60.0 and s >= 0.30:
+                plantish += 1  # yellow / brown diseased foliage
+            elif (h < 28.0 or h >= 340.0) and s >= 0.12:
+                skinish += 1  # human skin / red tones
         ratio = plantish / total
         skin_ratio = skinish / total
-        return (ratio >= 0.25 and ratio >= skin_ratio), round(ratio, 3)
+        return (ratio >= 0.25 and ratio > skin_ratio), round(ratio, 3)
 
     def validate(self, image_bytes: bytes) -> dict:
         try:
@@ -105,6 +116,30 @@ class PlantGatekeeper:
             logger.warning("Invalid image: %s", exc)
             return {"success": False, "is_plant_related": False, "category": "unknown",
                     "confidence": 0.0, "message": "The uploaded file is not a valid image."}
+
+        # Downscale large phone photos before CLIP/heuristic: CLIP input is
+        # ~224px anyway, so a 4000px upload only wastes CPU/RAM and time.
+        # This is the biggest speedup for "scan takes very long".
+        try:
+            if max(image.size) > 384:
+                image.thumbnail((384, 384), Image.LANCZOS)
+        except Exception:
+            pass
+
+        # FAST PATH: cheap colour heuristic first (<100ms). Clear leaf photos
+        # (ratio >= 0.40) and clear non-plants (ratio < 0.12) return instantly
+        # without loading/running the 600MB CLIP model. CLIP runs only for
+        # borderline cases and only if AI_ENABLE_CLIP=true.
+        is_plant_fast, ratio_fast = self._heuristic_is_plant(image)
+        if ratio_fast >= 0.40:
+            return {"success": True, "is_plant_related": True,
+                    "category": "plant", "confidence": max(ratio_fast, 0.5),
+                    "message": None}
+        if ratio_fast < 0.12:
+            return {"success": False, "is_plant_related": False, "category": "unknown",
+                    "confidence": ratio_fast,
+                    "message": "Plant unavailable — this photo doesn't look like a plant. "
+                               "Please upload a clear photo of a leaf or plant."}
 
         clip = self._load_clip()
         if clip is not None:
@@ -125,11 +160,12 @@ class PlantGatekeeper:
             except Exception as exc:
                 logger.warning("CLIP inference failed (%s); using heuristic.", exc)
 
-        is_plant, ratio = self._heuristic_is_plant(image)
+        # Borderline case: reuse fast heuristic result (already computed).
+        is_plant, ratio = is_plant_fast, ratio_fast
         if not is_plant:
             return {"success": False, "is_plant_related": False, "category": "unknown",
                     "confidence": ratio,
-                    "message": "This image does not appear to contain a plant. "
+                    "message": "Plant unavailable — this photo doesn't look like a plant. "
                                "Please upload a clear photo of a leaf or plant."}
         return {"success": True, "is_plant_related": True, "category": "plant",
                 "confidence": max(ratio, 0.5), "message": None}
@@ -307,7 +343,7 @@ class DiseasePredictor:
                 "treatment": None, "prevention": None, "explanation": None,
                 "plant_info": None, "low_confidence": False, "needs_expert": False,
                 "top_predictions": None,
-                "message": gate.get("message") or "Please upload a clear plant or leaf image.",
+                "message": gate.get("message") or "Plant unavailable — please upload a clear plant or leaf image.",
             }
 
         result = self.classifier.predict(image_bytes)

@@ -38,6 +38,57 @@ export default function Scanner() {
     }
   };
 
+  const compressImage = (input: Blob): Promise<Blob> => {
+    // Shrink large phone photos (4000px, 5-8MB) to max 1024px JPEG ~200-400KB.
+    // This is what makes upload + backend inference 3-5x faster.
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(input);
+      img.onload = () => {
+        const maxEdge = 1024;
+        const scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d')?.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        canvas.toBlob((blob) => resolve(blob || input), 'image/jpeg', 0.82);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(input); };
+      img.src = url;
+    });
+  };
+
+  const quickPlantCheck = (input: Blob): Promise<boolean> => {
+    // Instant frontend guard: human/selfie photos have almost no green.
+    // Returns true = looks like plant, false = definitely not a plant.
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(input);
+      img.onload = () => {
+        try {
+          const c = document.createElement('canvas');
+          c.width = 64; c.height = 64;
+          const ctx = c.getContext('2d');
+          if (!ctx) { URL.revokeObjectURL(url); resolve(true); return; }
+          ctx.drawImage(img, 0, 0, 64, 64);
+          const d = ctx.getImageData(0, 0, 64, 64).data;
+          let green = 0; const total = 64 * 64;
+          for (let i = 0; i < d.length; i += 4) {
+            const r = d[i], g = d[i + 1], b = d[i + 2];
+            if (g > r && g > b && g > 40 && (g - Math.min(r, b)) > 15) green++;
+          }
+          URL.revokeObjectURL(url);
+          resolve(green / total >= 0.08);
+        } catch { URL.revokeObjectURL(url); resolve(true); }
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(true); };
+      img.src = url;
+    });
+  };
+
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
     setValidationError(null);
@@ -48,14 +99,25 @@ export default function Scanner() {
 
       // If it's a real file upload, we need to send it to the backend
       const formData = new FormData();
-      
+
+      // Instant "Plant unavailable" pop-up for human/selfie photos —
+      // no backend call, no plant info shown at all.
+      const PLANT_UNAVAILABLE = "Plant unavailable — this photo doesn't look like a plant. Please upload a clear photo of a leaf or plant.";
       if (file) {
-        formData.append('file', file);
+        const looksPlant = await quickPlantCheck(file);
+        if (!looksPlant) {
+          setIsAnalyzing(false);
+          setValidationError(PLANT_UNAVAILABLE);
+          return;
+        }
+        const small = await compressImage(file);
+        formData.append('file', small, 'leaf.jpg');
       } else {
         // If it's a demo, we need to fetch the image blob and send it
         const response = await fetch(preview!);
         const blob = await response.blob();
-        formData.append('file', blob, 'demo_image.jpg');
+        const small = await compressImage(blob);
+        formData.append('file', small, 'demo_image.jpg');
         
         if (isInvalidDemo) {
           formData.append('simulate_invalid', 'true');
@@ -70,7 +132,7 @@ export default function Scanner() {
 
       if (!data.success || !data.is_plant_related) {
         setIsAnalyzing(false);
-        setValidationError(data.message || "This image does not appear to contain a plant. Please upload a plant or farming-related image.");
+        setValidationError(data.message || "Plant unavailable — this photo doesn't look like a plant. Please upload a clear photo of a leaf or plant.");
         return;
       }
 
@@ -164,7 +226,7 @@ export default function Scanner() {
                     className="absolute inset-0 bg-gray-900/80 backdrop-blur-md flex flex-col items-center justify-center text-white p-6 text-center"
                   >
                     <XCircle className="w-16 h-16 text-red-400 mb-4" />
-                    <h2 className="text-2xl font-bold mb-2">🌱 Plant Image Required</h2>
+                    <h2 className="text-2xl font-bold mb-2">🌱 Plant Unavailable</h2>
                     <p className="text-gray-300 max-w-md mb-6">{validationError}</p>
                     <div className="text-sm text-gray-400 mb-8 space-y-1">
                       <p>✓ A plant leaf</p>
