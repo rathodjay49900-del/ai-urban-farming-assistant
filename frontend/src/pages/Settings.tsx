@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Settings as SettingsIcon, Bell, Shield, Moon } from 'lucide-react';
+import { applyTheme, getTheme, type Theme } from '../utils/theme';
 
 function loadPref(key: string, fallback: boolean): boolean {
   try {
@@ -42,6 +43,13 @@ function Toggle({ prefKey, defaultOn, label, hint }: { prefKey: string; defaultO
 }
 
 export default function Settings() {
+  const [theme, setTheme] = useState<Theme>(getTheme);
+
+  const selectTheme = (nextTheme: Theme) => {
+    setTheme(nextTheme);
+    applyTheme(nextTheme);
+  };
+
   return (
     <div className="max-w-4xl mx-auto py-8">
       <div className="mb-8">
@@ -73,8 +81,30 @@ export default function Settings() {
         <div className="p-6">
           <h2 className="font-bold text-lg mb-4 flex items-center gap-2"><Moon className="w-5 h-5 text-primary" /> Appearance</h2>
           <div className="flex gap-4">
-            <button className="flex-1 py-3 border-2 border-primary bg-primary/5 rounded-xl font-bold text-primary">Light Mode</button>
-            <button disabled title="Dark mode is not available yet" className="flex-1 py-3 border border-border rounded-xl font-medium text-gray-400 cursor-not-allowed">Dark Mode</button>
+            <button
+              type="button"
+              aria-pressed={theme === 'light'}
+              onClick={() => selectTheme('light')}
+              className={`flex-1 py-3 rounded-xl transition-colors ${
+                theme === 'light'
+                  ? 'border-2 border-primary bg-primary/5 font-bold text-primary'
+                  : 'border border-border font-medium text-muted hover:bg-gray-50'
+              }`}
+            >
+              Light Mode
+            </button>
+            <button
+              type="button"
+              aria-pressed={theme === 'dark'}
+              onClick={() => selectTheme('dark')}
+              className={`flex-1 py-3 rounded-xl transition-colors ${
+                theme === 'dark'
+                  ? 'border-2 border-primary bg-primary/10 font-bold text-primary'
+                  : 'border border-border font-medium text-muted hover:bg-gray-50'
+              }`}
+            >
+              Dark Mode
+            </button>
           </div>
         </div>
       </div>
