@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UploadCloud, Bot, AlertCircle, Camera, XCircle, RefreshCw } from 'lucide-react';
+import { UploadCloud, Bot, AlertCircle, Camera, XCircle, RefreshCw, Video } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { scannerApi } from '../services/api';
 
@@ -12,18 +12,67 @@ export default function Scanner() {
   const [validationError, setValidationError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const extractFrameFromVideo = (videoFile: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      video.src = URL.createObjectURL(videoFile);
+      video.muted = true;
+      video.playsInline = true;
+      video.crossOrigin = "anonymous";
+      
+      video.onloadedmetadata = () => {
+        video.currentTime = Math.min(1, video.duration / 2 || 0.5);
+      };
+      
+      video.onseeked = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const extractedFile = new File([blob], "video_frame.jpg", { type: "image/jpeg" });
+            URL.revokeObjectURL(video.src);
+            resolve(extractedFile);
+          } else {
+            reject(new Error("Failed to extract frame"));
+          }
+        }, 'image/jpeg', 0.9);
+      };
+      
+      video.onerror = (e) => {
+        URL.revokeObjectURL(video.src);
+        reject(e);
+      };
+    });
+  };
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const selected = acceptedFiles[0];
     if (selected) {
-      setFile(selected);
-      setPreview(URL.createObjectURL(selected));
-      setValidationError(null);
+      if (selected.type.startsWith('video/')) {
+        try {
+          const frameFile = await extractFrameFromVideo(selected);
+          setFile(frameFile);
+          setPreview(URL.createObjectURL(frameFile));
+          setValidationError(null);
+        } catch (e) {
+          console.error("Video error:", e);
+          setValidationError("Could not extract frame from video. Please upload an image instead.");
+        }
+      } else {
+        setFile(selected);
+        setPreview(URL.createObjectURL(selected));
+        setValidationError(null);
+      }
     }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { 'image/jpeg': [], 'image/png': [] },
+    accept: { 'image/*': [], 'video/*': [] },
     maxFiles: 1
   });
 
@@ -166,10 +215,10 @@ export default function Scanner() {
       <div className="bg-card rounded-3xl p-6 md:p-8 shadow-sm border border-border">
         {!preview ? (
           <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div 
                 {...getRootProps()} 
-                className={`border-2 border-dashed rounded-3xl p-12 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
+                className={`border-2 border-dashed rounded-3xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
                   isDragActive ? 'border-ai bg-indigo-50' : 'border-border hover:bg-gray-50 hover:border-gray-300'
                 }`}
               >
@@ -181,7 +230,7 @@ export default function Scanner() {
                 <p className="text-muted text-sm">Drag & drop your file here</p>
               </div>
 
-              <label className="border-2 border-border rounded-3xl p-12 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 hover:border-gray-300 transition-colors w-full h-full">
+              <label className="border-2 border-border rounded-3xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 hover:border-gray-300 transition-colors w-full h-full">
                 <input 
                   type="file" 
                   accept="image/*" 
@@ -201,6 +250,32 @@ export default function Scanner() {
                 </div>
                 <h3 className="text-lg font-semibold text-text mb-2">Take Photo</h3>
                 <p className="text-muted text-sm">Use your device camera</p>
+              </label>
+
+              <label className="border-2 border-border rounded-3xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 hover:border-gray-300 transition-colors w-full h-full">
+                <input 
+                  type="file" 
+                  accept="video/*" 
+                  className="hidden" 
+                  onChange={async (e) => {
+                    const selected = e.target.files?.[0];
+                    if (selected) {
+                      try {
+                        const frameFile = await extractFrameFromVideo(selected);
+                        setFile(frameFile);
+                        setPreview(URL.createObjectURL(frameFile));
+                        setValidationError(null);
+                      } catch (err) {
+                        setValidationError("Could not extract frame from video.");
+                      }
+                    }
+                  }}
+                />
+                <div className="w-16 h-16 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-6">
+                  <Video className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-semibold text-text mb-2">Upload Video</h3>
+                <p className="text-muted text-sm">Select a short video clip</p>
               </label>
             </div>
             
