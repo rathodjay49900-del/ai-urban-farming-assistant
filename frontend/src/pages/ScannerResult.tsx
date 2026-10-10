@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Bot, CheckCircle, AlertTriangle, Droplets, Leaf, Thermometer, Sun } from 'lucide-react';
 import { Link, useParams, useLocation } from 'react-router-dom';
 
@@ -247,7 +247,7 @@ export default function ScannerResult() {
                       {diseaseResult.symptoms.length === 0 && (
                         <li className="text-sm text-muted">Not provided by the model.</li>
                       )}
-                      {diseaseResult.symptoms.map((symptom, i) => (
+                      {diseaseResult.symptoms.map((symptom: string, i: number) => (
                         <li key={i} className="flex items-start gap-3 text-sm text-text">
                           <div className="w-1.5 h-1.5 rounded-full bg-warning mt-1.5 flex-shrink-0" />
                           {symptom}
@@ -265,7 +265,7 @@ export default function ScannerResult() {
                       {diseaseResult.treatment.length === 0 && (
                         <li className="text-sm text-muted">Not provided by the model — consult an expert.</li>
                       )}
-                      {diseaseResult.treatment.map((treatment, i) => (
+                      {diseaseResult.treatment.map((treatment: string, i: number) => (
                         <li key={i} className="flex items-start gap-3 text-sm text-text">
                           <div className="w-5 h-5 rounded-full bg-green-100 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
                             {i + 1}
