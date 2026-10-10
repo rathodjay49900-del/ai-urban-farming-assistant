@@ -26,6 +26,10 @@ if _TEST_DB.exists():
 
 os.environ["DATABASE_URL"] = f"sqlite:///{_TEST_DB.as_posix()}"
 os.environ["AI_ENABLE_CLIP"] = "false"
+# Pin the model path to a file that never exists so API tests stay hermetic:
+# they must exercise the honest no-model fallback even after the user trains
+# a real checkpoint into backend/ml/model/.
+os.environ["AI_MODEL_PATH"] = str(Path(tempfile.gettempdir()) / "ai_urban_farming_test_missing.pth")
 
 
 @pytest.fixture(scope="session")

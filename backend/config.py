@@ -13,7 +13,9 @@ except Exception:  # python-dotenv optional
 
 BACKEND_DIR = Path(__file__).resolve().parent
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./ai_farming.db")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL", f"sqlite:///{(BACKEND_DIR / 'ai_farming.db').as_posix()}"
+)
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
 API_PORT = int(os.getenv("API_PORT", "8000"))
 

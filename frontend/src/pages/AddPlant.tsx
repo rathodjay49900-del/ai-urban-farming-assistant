@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { UploadCloud, CheckCircle2, Compass, X } from 'lucide-react';
+import { UploadCloud, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { plantApi } from '../services/api';
 
 export default function AddPlant() {
   const [success, setSuccess] = useState(false);
-  const [arModal, setArModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -125,14 +124,6 @@ export default function AddPlant() {
                 <div className="md:col-span-2">
                   <div className="flex justify-between items-center mb-2">
                     <label className="block text-sm font-medium text-text">Location & Placement</label>
-                    <button 
-                      type="button" 
-                      onClick={() => setArModal(true)}
-                      className="text-xs font-bold text-primary flex items-center gap-1 bg-primary/10 px-3 py-1 rounded-full hover:bg-primary/20 transition-colors"
-                    >
-                      <Compass className="w-3 h-3" />
-                      AR Sun Tracker
-                    </button>
                   </div>
                   <select
                     value={form.location}
@@ -163,51 +154,6 @@ export default function AddPlant() {
               </button>
             </div>
           </motion.form>
-        )}
-      </AnimatePresence>
-
-      {/* AR Modal Mockup */}
-      <AnimatePresence>
-        {arModal && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
-          >
-            <div className="bg-gray-900 w-full max-w-sm rounded-[3rem] aspect-[9/19] border-[8px] border-gray-800 relative overflow-hidden flex flex-col justify-between">
-              <div className="absolute top-6 right-6 z-10">
-                <button onClick={() => setArModal(false)} className="bg-black/50 text-white p-2 rounded-full">
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-              
-              <div className="flex-1 flex flex-col items-center justify-center p-6 relative">
-                {/* Simulated Camera View Background */}
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1599598425947-3300262955bf?q=80&w=400')] bg-cover bg-center opacity-40 mix-blend-luminosity"></div>
-                
-                <div className="relative z-10 text-center">
-                  <Compass className="w-16 h-16 text-yellow-400 mx-auto mb-4 animate-spin-slow" />
-                  <h3 className="text-white text-xl font-bold mb-2">Analyzing Sunlight...</h3>
-                  <p className="text-gray-300 text-sm mb-8">Move your phone around the room</p>
-                  
-                  <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl text-left">
-                    <p className="text-green-400 font-bold text-sm mb-1 flex items-center gap-2">✓ Perfect Spot Found</p>
-                    <p className="text-white text-sm">Place your plant 2 meters to the left for optimal morning sun (East).</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="p-6 pb-10 bg-gradient-to-t from-black to-transparent relative z-10">
-                <button 
-                  onClick={() => setArModal(false)}
-                  className="w-full bg-primary text-white py-4 rounded-full font-bold shadow-lg shadow-primary/30"
-                >
-                  Save Location
-                </button>
-              </div>
-            </div>
-          </motion.div>
         )}
       </AnimatePresence>
     </div>

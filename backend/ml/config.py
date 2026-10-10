@@ -39,6 +39,10 @@ SPLIT_SEED = int(os.getenv("AI_SPLIT_SEED", "42"))
 # Dataset validation guards
 MIN_SAMPLES_PER_CLASS = int(os.getenv("AI_MIN_SAMPLES_PER_CLASS", "10"))
 REQUIRE_ALL_CLASSES = os.getenv("AI_REQUIRE_ALL_CLASSES", "true").lower() in {"1", "true", "yes"}
+# When true, class folders that are NOT one of the 38 known PlantVillage classes
+# are trained as-is (label = folder name). Use this for your own real-world
+# dataset. Disease info then falls back to a generic record for those labels.
+ACCEPT_UNKNOWN_CLASSES = os.getenv("AI_ACCEPT_UNKNOWN_CLASSES", "false").lower() in {"1", "true", "yes"}
 # Perceptual-hash (dHash) Hamming distance used to drop *near* duplicates.
 # 0 disables the extra pass (exact MD5 de-duplication still always runs).
 NEAR_DUP_THRESHOLD = int(os.getenv("AI_NEAR_DUP_THRESHOLD", "0"))

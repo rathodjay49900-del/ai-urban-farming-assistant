@@ -6,16 +6,35 @@ fully usable before the model is trained. Nothing is faked: until you train a
 checkpoint the API honestly reports "model not trained" instead of inventing a
 diagnosis.
 
-> TL;DR
+> TL;DR (one-shot: verifies, splits, trains, evaluates, optional prediction)
 > ```bat
-> cd backend
-> pip install -r requirements.txt -r requirements-ml.txt
-> python -m ml.preprocess --dataset-dir ml\data\plantvillage\color
-> python -m ml.train --epochs 20
-> python -m ml.evaluate
-> python seed.py
-> uvicorn main:app --reload
+> train_model.bat --data "D:\datasets\plantvillage\color"
 > ```
+> The equivalent manual steps are in sections 3–6. `train_model.bat` creates
+> `backend\.venv`, installs the requirements, and runs `backend\train_pipeline.py`.
+
+> **Using your own real-world photos** (one folder per class):
+> ```bat
+> train_model.bat --data "D:\my_photos" --any-classes --realworld-test "D:\my_photos"
+> ```
+> `--any-classes` lets the model train on class names that are not the 38
+> PlantVillage ones; `--realworld-test` reports accuracy on those field photos so
+> you can see the lab-vs-field gap. If your folders *are* the 38 PlantVillage
+> names, drop `--any-classes`.
+>
+> Already trained and just want a single prediction?
+> ```bat
+> backend\.venv\Scripts\python backend\train_pipeline.py --predict-only "D:\my_photos\leaf.jpg"
+> ```
+>
+> > **No dataset yet?** Validate your environment first (needs only torch —
+> > no dataset, ~1 minute, never touches the real model folder):
+> > ```bat
+> > cd backend
+> > python train_pipeline.py --smoke-test
+> > ```
+> > Expect 9/9 `[PASS]` checks. A pass proves the environment works; it does
+> > NOT prove real training will succeed.
 
 ---
 
@@ -24,7 +43,7 @@ diagnosis.
 * **Python 3.10+** (tested on 3.13).
 * Backend deps: `pip install -r backend/requirements.txt`
 * ML deps: `pip install -r backend/requirements-ml.txt`
-  (torch, torchvision, transformers, scikit-learn, matplotlib, pytest, httpx)
+  (torch, torchvision, transformers, scikit-learn, matplotlib, kaggle, pytest, httpx)
 * Optional **CUDA GPU** for faster training. CPU works but is slow.
   For a CUDA torch build see <https://pytorch.org/get-started/locally/>.
 
@@ -52,6 +71,24 @@ set AI_DATASET_DIR=D:\datasets\plantvillage\color
 ```
 
 You can also just drop the folder at the default `backend/ml/data/plantvillage/color`.
+
+### Using your own real-world dataset
+
+Organise your photos as one folder per class (the folder name is the label):
+
+```
+my_photos/
+    Tomato___Early_blight/   img1.jpg img2.jpg ...
+    Tomato___healthy/        img1.jpg ...
+```
+
+* If the names are the 38 PlantVillage classes → train normally.
+* If the names are your own (e.g. `early_blight`, `healthy`) → pass
+  `--any-classes` (or set `AI_ACCEPT_UNKNOWN_CLASSES=true`). The classifier
+  still works; the app just shows a generic care record for unknown labels
+  instead of the curated disease text.
+* Aim for **at least `AI_MIN_SAMPLES_PER_CLASS` (default 10) images per class**
+  and a **separate real photos folder** for `--realworld-test`.
 
 ---
 
@@ -96,7 +133,7 @@ Details:
 
 * 224×224 RGB, ImageNet normalisation (matches the pretrained weights).
 * Augmentation: random resized crop, horizontal flip, ±15° rotation, colour jitter.
-* Weighted cross-entropy, **AdamW-style** Adam optimiser, default **LR = 1e-4**.
+* Weighted cross-entropy, **Adam** optimiser, default **LR = 1e-4**.
 * `ReduceLROnPlateau` + early stopping (`AI_EARLY_STOP`, default 5).
 * Saves the **best validation** checkpoint, never the last epoch.
 * Aborts on NaN/inf loss, empty splits or labels outside the class map.
@@ -206,6 +243,9 @@ Coverage:
   or missing checkpoints degrade safely, **no fake tomato diagnosis**.
 * `test_api.py` — health metadata (no path leak), plant CRUD + health history,
   watering logs, dashboard stats, scanner analyze/reject + upload limits.
+* `test_db.py` — schema creation on empty DB, migration-map coverage of every
+  model column, idempotent `ensure_schema`, invalid-input rejection, delete
+  cascade.
 
 Frontend: run `npm run build` (tsc type-check) and `npm run lint`. There is no
 JS unit-test runner configured (see "Remaining work").
@@ -230,7 +270,9 @@ JS unit-test runner configured (see "Remaining work").
 
 * Same seed (`AI_SEED`, `AI_SPLIT_SEED`) → same split and same init.
 * `metadata.json` stores the manifest SHA-256 and full training config.
-* `labels.json` is always `sorted(DISEASE_INFO)` — class indices never change.
+* `labels.json` records the exact ordered class list used for that checkpoint
+  (for the full dataset this is `sorted(DISEASE_INFO)`) — class indices never
+  change for a given manifest.
 * Model + `labels.json` + `metadata.json` must be kept together.
 
 ### Honest status

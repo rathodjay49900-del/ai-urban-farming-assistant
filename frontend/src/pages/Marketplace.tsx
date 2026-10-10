@@ -22,6 +22,11 @@ export default function Marketplace() {
         </div>
       </div>
 
+      <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl px-6 py-4 text-sm mb-8">
+        <span className="font-bold">DEMO preview</span> — sample catalog only.
+        Checkout and cart are not connected to a backend yet.
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {products.map((product, idx) => (
           <motion.div 
@@ -47,7 +52,7 @@ export default function Marketplace() {
             
             <div className="flex justify-between items-center mt-auto">
               <span className="text-xl font-black text-text">{product.price}</span>
-              <button className="bg-text text-white p-2 rounded-lg hover:bg-primary transition-colors">
+              <button disabled title="Checkout is not connected to a backend yet" className="bg-gray-200 text-gray-400 p-2 rounded-lg cursor-not-allowed">
                 <ShoppingCart className="w-5 h-5" />
               </button>
             </div>
@@ -66,23 +71,22 @@ export default function Marketplace() {
           <span className="text-primary font-bold tracking-widest uppercase text-sm mb-2 block">Enterprise Plan</span>
           <h2 className="text-3xl font-bold mb-4">Are you a commercial nursery?</h2>
           <p className="text-gray-300 mb-6">
-            Get bulk access to our AI disease API, bulk seeds, and automated drone integrations. 
-            LeafLogic powers over 50+ commercial farms.
+            Get bulk access to our AI disease API, bulk seeds, and automated drone integrations.
           </p>
-          <button className="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors">
+          <button disabled title="Contact form is not connected yet" className="bg-gray-600 text-gray-300 px-6 py-3 rounded-xl font-bold cursor-not-allowed">
             Contact Sales
           </button>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl text-center">
             <Package className="w-8 h-8 text-green-400 mx-auto mb-2" />
-            <div className="font-bold text-2xl">50k+</div>
-            <div className="text-xs text-gray-400">Scans/Day</div>
+            <div className="font-bold text-2xl">API</div>
+            <div className="text-xs text-gray-400">Disease detection endpoint</div>
           </div>
           <div className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl text-center">
             <Users className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-            <div className="font-bold text-2xl">12k+</div>
-            <div className="text-xs text-gray-400">Farmers</div>
+            <div className="font-bold text-2xl">38</div>
+            <div className="text-xs text-gray-400">Supported crop-disease classes</div>
           </div>
         </div>
       </motion.div>

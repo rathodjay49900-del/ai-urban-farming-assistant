@@ -226,8 +226,13 @@ class DiseaseClassifier:
         import torch
         from torchvision import transforms
 
+        # Must match the eval transform in train.py / evaluate.py
+        # (Resize + CenterCrop + ImageNet normalisation), otherwise the served
+        # model sees a different input distribution than it was validated on.
+        resize_edge = int(self.image_size * 256 / 224)
         tf = transforms.Compose([
-            transforms.Resize((self.image_size, self.image_size)),
+            transforms.Resize(resize_edge),
+            transforms.CenterCrop(self.image_size),
             transforms.ToTensor(),
             transforms.Normalize(self.mean, self.std),
         ])

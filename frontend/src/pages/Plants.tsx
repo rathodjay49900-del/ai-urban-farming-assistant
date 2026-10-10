@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Droplets, Activity, Plus, QrCode, Printer, X, History, Image as ImageIcon, LayoutGrid, Loader2 } from 'lucide-react';
+import { Droplets, Activity, Plus, QrCode, Printer, X, History, LayoutGrid, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { plantApi, type Plant } from '../services/api';
+import { plantApi, scannerApi, type Plant, type HealthLogItem, type ScanHistoryItem } from '../services/api';
 
 const typeEmoji: Record<string, string> = {
   tomato: '🍅', chilli: '🌶️', chili: '🌶️', mint: '🌿', basil: '🌱',
@@ -21,6 +21,9 @@ export default function Plants() {
   const [qrModal, setQrModal] = useState<number | null>(null);
   const [journalModal, setJournalModal] = useState<number | null>(null);
   const [is3DView, setIs3DView] = useState(false);
+  const [journalLogs, setJournalLogs] = useState<HealthLogItem[]>([]);
+  const [journalScans, setJournalScans] = useState<ScanHistoryItem[]>([]);
+  const [journalLoading, setJournalLoading] = useState(false);
 
   useEffect(() => {
     plantApi.list()
@@ -28,6 +31,18 @@ export default function Plants() {
       .catch(() => setError('Could not load plants. Is the backend running?'))
       .finally(() => setLoading(false));
   }, []);
+
+  // Load the real health + scan history when the journal is opened.
+  useEffect(() => {
+    if (journalModal == null) return;
+    setJournalLoading(true);
+    Promise.all([
+      plantApi.healthHistory(journalModal).catch(() => [] as HealthLogItem[]),
+      scannerApi.history(journalModal).catch(() => [] as ScanHistoryItem[]),
+    ])
+      .then(([logs, scans]) => { setJournalLogs(logs); setJournalScans(scans); })
+      .finally(() => setJournalLoading(false));
+  }, [journalModal]);
 
   const activePlant = plants.find(p => p.id === qrModal);
   const journalPlant = plants.find(p => p.id === journalModal);
@@ -184,10 +199,7 @@ export default function Plants() {
               </div>
               
               <button 
-                onClick={() => {
-                  alert("Printing started! (Simulated)");
-                  setQrModal(null);
-                }}
+                onClick={() => window.print()}
                 className="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg shadow-primary/30 flex items-center justify-center gap-2 hover:bg-primary/90 transition-all active:scale-95"
               >
                 <Printer className="w-5 h-5" />
@@ -233,39 +245,54 @@ export default function Plants() {
               </div>
 
               <div className="relative border-l-2 border-green-100 ml-4 py-2 space-y-8">
-                {[
-                  { date: 'Today', note: 'Looking very healthy! Leaves are vibrant.', height: '32 cm', image: 'https://images.unsplash.com/photo-1592150621744-aca64f48394a?w=400&q=80' },
-                  { date: '2 weeks ago', note: 'Recovered from minor spotting. Treatment worked.', height: '28 cm', image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=400&q=80' },
-                  { date: '1 month ago', note: 'Transplanted to a bigger pot.', height: '20 cm', image: 'https://images.unsplash.com/photo-1592150621744-aca64f48394a?w=400&q=80' }
-                ].map((entry, idx) => (
-                  <div key={idx} className="relative pl-8">
-                    <div className="absolute w-4 h-4 rounded-full bg-primary -left-[9px] top-1 border-4 border-white"></div>
-                    <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex flex-col md:flex-row gap-4">
-                      <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 relative group cursor-pointer">
-                        <img src={entry.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                           <ImageIcon className="w-6 h-6 text-white" />
-                        </div>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start mb-2">
-                          <span className="font-bold text-sm text-primary">{entry.date}</span>
-                          <span className="text-xs font-semibold bg-white px-2 py-1 rounded-md border border-gray-200">Ht: {entry.height}</span>
-                        </div>
-                        <p className="text-sm text-text leading-relaxed">{entry.note}</p>
-                      </div>
-                    </div>
+                {journalLoading ? (
+                  <div className="flex items-center gap-3 pl-8 text-muted text-sm">
+                    <Loader2 className="w-5 h-5 animate-spin" /> Loading history...
                   </div>
-                ))}
-              </div>
-              
-              <div className="mt-8 flex gap-3">
-                <button className="flex-1 bg-primary text-white py-3 rounded-xl font-medium shadow-sm hover:bg-primary/90 transition-colors flex justify-center items-center gap-2">
-                  <ImageIcon className="w-4 h-4" /> Add Photo
-                </button>
-                <button className="flex-1 bg-green-50 text-primary py-3 rounded-xl font-medium border border-green-100 hover:bg-green-100 transition-colors flex justify-center items-center gap-2">
-                  ▶ Play Time-Lapse
-                </button>
+                ) : journalLogs.length === 0 && journalScans.length === 0 ? (
+                  <p className="pl-8 text-sm text-muted">No health or scan history recorded for this plant yet.</p>
+                ) : (
+                  <>
+                    {journalLogs.map((log) => (
+                      <div key={`health-${log.id}`} className="relative pl-8">
+                        <div className="absolute w-4 h-4 rounded-full bg-primary -left-[9px] top-1 border-4 border-white"></div>
+                        <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="font-bold text-sm text-primary">
+                              {log.created_at ? new Date(log.created_at).toLocaleDateString() : '—'}
+                            </span>
+                            <span className="text-xs font-semibold bg-white px-2 py-1 rounded-md border border-gray-200">
+                              {log.health_score}% · {log.status}
+                            </span>
+                          </div>
+                          <p className="text-sm text-text leading-relaxed">{log.note || 'Health recorded.'}</p>
+                        </div>
+                      </div>
+                    ))}
+                    {journalScans.map((scan) => (
+                      <div key={`scan-${scan.id}`} className="relative pl-8">
+                        <div className="absolute w-4 h-4 rounded-full bg-sky-500 -left-[9px] top-1 border-4 border-white"></div>
+                        <div className="bg-sky-50/50 rounded-2xl p-4 border border-sky-100">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="font-bold text-sm text-sky-700">
+                              Scan — {scan.created_at ? new Date(scan.created_at).toLocaleDateString() : '—'}
+                            </span>
+                            <span className="text-xs font-semibold bg-white px-2 py-1 rounded-md border border-gray-200">
+                              {scan.confidence != null ? `${scan.confidence}%` : ''}
+                            </span>
+                          </div>
+                          <p className="text-sm text-text leading-relaxed">
+                            {scan.disease
+                              ? `Detected: ${scan.disease}`
+                              : scan.needs_expert
+                                ? 'Inconclusive scan — expert verification recommended.'
+                                : 'No disease detected.'}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
             </motion.div>
           </motion.div>

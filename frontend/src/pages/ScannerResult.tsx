@@ -17,15 +17,34 @@ export default function ScannerResult() {
   // The disease panel may ONLY render when the backend returned a real disease.
   const undetermined = !isHealthy && (!hasApi || uncertain || !apiResult?.disease);
 
-  // Use dynamic info from backend if available, fallback to mock
+  // No scan data at all (e.g. direct navigation) — never invent a plant/disease.
+  if (!hasApi) {
+    return (
+      <div className="max-w-5xl mx-auto py-8 space-y-8">
+        <div className="flex items-center gap-4 mb-8">
+          <Link to="/scanner" className="text-muted hover:text-text">&larr; Back to Scanner</Link>
+        </div>
+        <div className="bg-card border border-dashed border-border rounded-3xl p-16 text-center">
+          <div className="text-5xl mb-4">🔍</div>
+          <h3 className="text-xl font-bold text-text mb-2">No scan result to show</h3>
+          <p className="text-muted mb-6">Run a scan first — results appear here after analysis.</p>
+          <Link to="/scanner" className="eco-gradient-bg text-white px-6 py-3 rounded-xl font-medium inline-flex items-center gap-2">
+            Go to Scanner
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Plant info comes only from the backend; nothing is assumed.
   const plantInfo = apiResult?.plant_info || {
-    name: "Tomato",
-    scientific_name: "Solanum lycopersicum",
-    category: "Vegetable",
-    sunlight: "6-8 hours/day",
-    water: "Regular watering with consistent soil moisture",
-    temperature: "Warm growing conditions",
-    soil: "Well-draining soil"
+    name: "Unknown plant",
+    scientific_name: "Not identified",
+    category: "—",
+    sunlight: "—",
+    water: "—",
+    temperature: "—",
+    soil: "—"
   };
 
   // All values below come from the backend; nothing disease-specific is invented.
@@ -266,10 +285,10 @@ export default function ScannerResult() {
               <h3 className="text-lg font-heading font-semibold text-text mb-1">Update Plant Care</h3>
               <p className="text-sm text-muted">Adjust watering schedule based on AI recommendations to help recovery.</p>
             </div>
-            <button className="bg-white px-8 py-4 rounded-xl font-bold shadow-sm hover:shadow-md transition-shadow text-primary flex items-center gap-2 whitespace-nowrap">
+            <Link to="/watering" className="bg-white px-8 py-4 rounded-xl font-bold shadow-sm hover:shadow-md transition-shadow text-primary flex items-center gap-2 whitespace-nowrap">
               <Droplets className="w-5 h-5" />
-              Update Watering
-            </button>
+              Go to Watering
+            </Link>
           </div>
         </div>
       </div>

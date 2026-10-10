@@ -73,7 +73,7 @@ export default function Sidebar() {
           </div>
           <div>
             <p className="text-sm font-medium text-text">Gardener</p>
-            <p className="text-xs text-muted">Pro Plan</p>
+            <p className="text-xs text-muted">Local garden</p>
           </div>
         </div>
       </div>

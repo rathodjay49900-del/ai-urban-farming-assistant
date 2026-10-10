@@ -61,9 +61,9 @@ class ManifestDataset(Dataset):
         return image, self.class_to_idx[item["label"]]
 
 
-def build_transforms():
+def build_transforms(image_size: int = config.IMAGE_SIZE):
     train_tf = transforms.Compose([
-        transforms.RandomResizedCrop(config.IMAGE_SIZE, scale=(0.7, 1.0)),
+        transforms.RandomResizedCrop(image_size, scale=(0.7, 1.0)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomRotation(15),
         transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
@@ -71,8 +71,8 @@ def build_transforms():
         transforms.Normalize(config.MEAN, config.STD),
     ])
     eval_tf = transforms.Compose([
-        transforms.Resize(int(config.IMAGE_SIZE * 256 / 224)),
-        transforms.CenterCrop(config.IMAGE_SIZE),
+        transforms.Resize(int(image_size * 256 / 224)),
+        transforms.CenterCrop(image_size),
         transforms.ToTensor(),
         transforms.Normalize(config.MEAN, config.STD),
     ])
@@ -161,7 +161,7 @@ def train(
     if bad:
         raise RuntimeError(f"{len(bad)} train samples reference unknown labels (e.g. {bad[0]['label']!r}).")
 
-    train_tf, eval_tf = build_transforms()
+    train_tf, eval_tf = build_transforms(image_size)
     datasets = {
         "train": ManifestDataset(root, manifest["splits"]["train"], class_to_idx, train_tf),
         "val": ManifestDataset(root, manifest["splits"]["val"], class_to_idx, eval_tf),

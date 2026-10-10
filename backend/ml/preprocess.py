@@ -98,12 +98,18 @@ def build_manifest(
     min_samples: int | None = None,
     require_all_classes: bool | None = None,
     near_dup_threshold: int | None = None,
+    accept_unknown_classes: bool | None = None,
     verify_images: bool = True,
     verification_output: Path | None = None,
 ) -> dict:
     min_samples = config.MIN_SAMPLES_PER_CLASS if min_samples is None else min_samples
     require_all_classes = config.REQUIRE_ALL_CLASSES if require_all_classes is None else require_all_classes
     near_dup_threshold = config.NEAR_DUP_THRESHOLD if near_dup_threshold is None else near_dup_threshold
+    accept_unknown_classes = (
+        config.ACCEPT_UNKNOWN_CLASSES if accept_unknown_classes is None else accept_unknown_classes
+    )
+    if accept_unknown_classes:
+        require_all_classes = False
     verification_output = verification_output or output.parent / "verification_report.json"
     effective_min = max(min_samples, MIN_SPLIT_SAMPLES)
 
@@ -130,8 +136,10 @@ def build_manifest(
         label = cdir.name
         if label not in DISEASE_INFO:
             unknown_classes.append(label)
-            print(f"  ! unknown class folder (skipped): {label}")
-            continue
+            if not accept_unknown_classes:
+                print(f"  ! unknown class folder (skipped): {label}")
+                continue
+            print(f"  + custom class folder (kept): {label}")
         present_classes.add(label)
         for img in sorted(cdir.rglob("*")):
             if img.suffix.lower() not in IMAGE_EXTS:
@@ -162,7 +170,7 @@ def build_manifest(
     if not per_class:
         raise RuntimeError("No usable images found. Check AI_DATASET_DIR.")
 
-    missing_classes = sorted(set(DISEASE_INFO) - present_classes)
+    missing_classes = [] if accept_unknown_classes else sorted(set(DISEASE_INFO) - present_classes)
     too_small = {c: len(f) for c, f in per_class.items() if len(f) < effective_min}
     if too_small:
         raise RuntimeError(
@@ -228,6 +236,7 @@ def build_manifest(
         "near_dup_threshold": near_dup_threshold,
         "corrupt_files_skipped": len(corrupt_files),
         "unknown_classes_skipped": unknown_classes,
+        "accept_unknown_classes": accept_unknown_classes,
         "missing_classes": missing_classes,
         "leakage_overlap_after_split": len(leak),
         "class_weights": class_weights,
@@ -273,6 +282,8 @@ def main() -> int:
                         help="dHash Hamming distance for near-duplicate removal (0 = off)")
     parser.add_argument("--allow-missing", action="store_true",
                         help="do not fail when some of the 38 supported classes are absent")
+    parser.add_argument("--any-classes", action="store_true",
+                        help="train on custom class folders (e.g. your own real-world photos)")
     parser.add_argument("--no-verify", action="store_true", help="skip opening every image (faster)")
     args = parser.parse_args()
 
@@ -282,6 +293,7 @@ def main() -> int:
             min_samples=args.min_samples,
             require_all_classes=not args.allow_missing,
             near_dup_threshold=args.near_dup_threshold,
+            accept_unknown_classes=args.any_classes,
             verify_images=not args.no_verify,
             verification_output=args.verification_output,
         )

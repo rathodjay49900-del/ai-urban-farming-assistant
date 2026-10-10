@@ -19,9 +19,14 @@ export default function Community() {
           <h1 className="text-3xl font-heading font-bold text-text mb-2">Crop Swap Community</h1>
           <p className="text-muted">Trade your extra harvest and seeds with neighbors nearby.</p>
         </div>
-        <button className="eco-gradient-bg text-white px-6 py-3 rounded-xl font-medium shadow-sm hover:shadow-md transition-shadow">
+        <button disabled title="Listings are not connected to a backend yet" className="bg-gray-200 text-gray-400 px-6 py-3 rounded-xl font-medium cursor-not-allowed">
           + Create Listing
         </button>
+      </div>
+
+      <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl px-6 py-4 text-sm mb-8">
+        <span className="font-bold">DEMO preview</span> — these sample listings are placeholders.
+        Trading and messaging are not connected to a backend yet.
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -61,10 +66,10 @@ export default function Community() {
             </div>
 
             <div className="flex md:flex-col gap-3 justify-center">
-              <button className="flex-1 md:flex-none bg-primary text-white py-3 px-6 rounded-xl font-medium shadow-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+              <button disabled title="Trading is not connected to a backend yet" className="flex-1 md:flex-none bg-gray-200 text-gray-400 py-3 px-6 rounded-xl font-medium cursor-not-allowed flex items-center justify-center gap-2">
                 <ArrowRightLeft className="w-4 h-4" /> Trade
               </button>
-              <button className="flex-1 md:flex-none bg-white border border-border text-text py-3 px-6 rounded-xl font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+              <button disabled title="Messaging is not connected to a backend yet" className="flex-1 md:flex-none bg-white border border-border text-gray-400 py-3 px-6 rounded-xl font-medium cursor-not-allowed flex items-center justify-center gap-2">
                 <MessageCircle className="w-4 h-4" /> Message
               </button>
             </div>

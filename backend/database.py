@@ -19,11 +19,13 @@ def get_db():
         db.close()
 
 
-# Additive columns introduced after the first release. SQLite's CREATE TABLE
+# Additive columns for every table, keyed by table name. SQLite's CREATE TABLE
 # (used by SQLAlchemy's create_all) never alters existing tables, so an old
-# database would be missing these and every query would fail. This lightweight,
-# idempotent migration adds the missing columns and rebuilds `disease_scans`
-# when its legacy NOT NULL constraint would reject healthy scans.
+# database file would otherwise be missing columns and every query touching
+# them would fail. This lightweight, idempotent migration adds whatever is
+# missing. Columns are added nullable (SQLite type affinity makes this safe)
+# so the ALTER never fails on tables that already hold rows; fresh tables
+# created by create_all still get the full model-defined schema.
 _ADDITIVE_COLUMNS = {
     "plants": {
         "name": "VARCHAR",
@@ -40,6 +42,34 @@ _ADDITIVE_COLUMNS = {
         "status": "VARCHAR",
         "image": "VARCHAR",
         "notes": "VARCHAR",
+        "created_at": "DATETIME",
+    },
+    "disease_scans": {
+        "plant_id": "INTEGER",
+        "image": "VARCHAR",
+        "crop": "VARCHAR",
+        "class_label": "VARCHAR",
+        "disease": "VARCHAR",
+        "confidence": "FLOAT",
+        "severity": "VARCHAR",
+        "recommendation": "VARCHAR",
+        "low_confidence": "BOOLEAN",
+        "needs_expert": "BOOLEAN",
+        "created_at": "DATETIME",
+    },
+    "watering_logs": {
+        "plant_id": "INTEGER",
+        "watered_at": "DATETIME",
+        "soil_moisture": "FLOAT",
+        "amount_ml": "FLOAT",
+        "note": "VARCHAR",
+    },
+    "health_logs": {
+        "plant_id": "INTEGER",
+        "health_score": "INTEGER",
+        "status": "VARCHAR",
+        "note": "VARCHAR",
+        "created_at": "DATETIME",
     },
 }
 

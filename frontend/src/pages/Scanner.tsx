@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UploadCloud, Bot, AlertCircle, Camera, XCircle, RefreshCw, Mic, X } from 'lucide-react';
+import { UploadCloud, Bot, AlertCircle, Camera, XCircle, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { scannerApi } from '../services/api';
 
@@ -10,20 +10,7 @@ export default function Scanner() {
   const [preview, setPreview] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [audioModal, setAudioModal] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [audioResult, setAudioResult] = useState<string | null>(null);
   const navigate = useNavigate();
-
-  const handleAudioScan = () => {
-    setAudioModal(true);
-    setIsListening(true);
-    setAudioResult(null);
-    setTimeout(() => {
-      setIsListening(false);
-      setAudioResult("Background Audio Detected: Crickets/Locusts. Risk of leaf damage is High.");
-    }, 4000);
-  };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const selected = acceptedFiles[0];
@@ -155,19 +142,6 @@ export default function Scanner() {
               </label>
             </div>
             
-            <button 
-              onClick={handleAudioScan}
-              className="w-full mt-6 bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-6 rounded-3xl flex items-center justify-center gap-4 hover:opacity-90 transition-opacity shadow-lg"
-            >
-              <div className="bg-white/20 p-3 rounded-full">
-                <Mic className="w-8 h-8" />
-              </div>
-              <div className="text-left">
-                <h3 className="text-xl font-bold">Listen for Pests (Audio AI)</h3>
-                <p className="text-white/80 text-sm">Shazam for Bugs - Detect pests by their sound</p>
-              </div>
-            </button>
-
             <div className="pt-6 border-t border-border">
               <p className="text-sm font-medium text-text mb-4 text-center">Try Demo Mode</p>
               <div className="flex flex-wrap justify-center gap-3">
@@ -283,54 +257,6 @@ export default function Scanner() {
         </p>
       </div>
 
-      {/* Audio Pest Modal */}
-      <AnimatePresence>
-        {audioModal && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
-          >
-            <div className="bg-gray-900 w-full max-w-sm rounded-[3rem] p-8 border-[8px] border-gray-800 relative flex flex-col items-center text-center">
-              <button 
-                onClick={() => setAudioModal(false)}
-                className="absolute top-6 right-6 text-gray-500 hover:text-white"
-              >
-                <X className="w-6 h-6" />
-              </button>
-
-              <h2 className="text-white font-bold text-xl mb-8 mt-4">AI Audio Scanner</h2>
-              
-              <div className="relative w-32 h-32 flex items-center justify-center mb-8">
-                {isListening && (
-                  <>
-                    <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }} transition={{ duration: 1.5, repeat: Infinity }} className="absolute inset-0 bg-purple-500 rounded-full"></motion.div>
-                    <motion.div animate={{ scale: [1, 2, 1], opacity: [0.3, 0, 0.3] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }} className="absolute inset-0 bg-purple-500 rounded-full"></motion.div>
-                  </>
-                )}
-                <div className={`relative z-10 w-20 h-20 rounded-full flex items-center justify-center ${isListening ? 'bg-purple-600' : 'bg-gray-700'}`}>
-                  <Mic className="w-10 h-10 text-white" />
-                </div>
-              </div>
-
-              {isListening ? (
-                <div className="space-y-2">
-                  <p className="text-purple-400 font-bold">Listening to environment...</p>
-                  <p className="text-gray-400 text-sm">Hold phone near your plants</p>
-                </div>
-              ) : (
-                <div className="bg-red-500/20 border border-red-500/50 p-4 rounded-xl">
-                  <div className="flex items-center justify-center gap-2 text-red-400 font-bold mb-2">
-                    <AlertCircle className="w-5 h-5" /> Threat Detected
-                  </div>
-                  <p className="text-white text-sm leading-relaxed">{audioResult}</p>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

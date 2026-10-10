@@ -6,25 +6,27 @@ import { useNavigate } from 'react-router-dom';
 const steps = [
   {
     title: "Welcome to LeafLogic! 🌱",
-    content: "I'm your AI Urban Farming Assistant. I'll help you grow a lush, healthy garden right on your balcony.",
+    content: "Your AI Urban Farming Assistant. Register plants, scan leaves, and track watering — all stored in your own database.",
     path: "/dashboard"
   },
   {
     title: "AI Disease Scanner 🔍",
-    content: "Upload a photo of any sick leaf, and our AI will instantly diagnose the disease and suggest organic treatments.",
+    content: "Upload a clear close-up of a single leaf. The scanner checks it shows a plant, then the trained model predicts the disease class — or honestly says when it cannot tell.",
     path: "/scanner"
   },
   {
-    title: "Marketplace & Monetization 🛒",
-    content: "Buy premium seeds or hire local gardeners. This is how we plan to monetize our platform!",
-    path: "/marketplace"
+    title: "Watering & Insights 💧",
+    content: "Log real watering events and watch health analytics computed from your own records — never invented numbers.",
+    path: "/watering"
   },
   {
     title: "You're all set! 🚀",
-    content: "Explore the app, earn Leaf Coins, and become an Eco-Hero. Happy farming!",
+    content: "Explore the app and grow a healthy garden. Happy farming!",
     path: "/dashboard"
   }
 ];
+
+const SEEN_KEY = 'leaflogic-tour-seen';
 
 export default function OnboardingTour() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -32,8 +34,14 @@ export default function OnboardingTour() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Show tour every time for Hackathon demo purposes
-    setTimeout(() => setIsVisible(true), 1500);
+    // Show the tour only on the first visit; never nag returning users.
+    let seen = false;
+    try {
+      seen = localStorage.getItem(SEEN_KEY) === '1';
+    } catch {
+      seen = false;
+    }
+    if (!seen) setTimeout(() => setIsVisible(true), 1500);
   }, []);
 
   const handleNext = () => {
@@ -48,6 +56,11 @@ export default function OnboardingTour() {
 
   const closeTour = () => {
     setIsVisible(false);
+    try {
+      localStorage.setItem(SEEN_KEY, '1');
+    } catch {
+      /* private mode — tour may reappear next visit */
+    }
     navigate('/dashboard');
   };
 

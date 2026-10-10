@@ -1,10 +1,11 @@
+import { Link } from 'react-router-dom';
 import { HelpCircle, MessageCircle, BookOpen, Video } from 'lucide-react';
 
 export default function Help() {
   const faqs = [
-    { q: 'How accurate is the AI Scanner?', a: 'Our zero-shot CLIP model provides ~92% accuracy across 50+ common plant diseases. Ensure your photos are well-lit for best results.' },
-    { q: 'How do I earn Leaf Coins?', a: 'You earn coins by consistently watering plants, reporting healthy growth, or swapping seeds in the Community Tab.' },
-    { q: 'Can I connect third-party sensors?', a: 'Yes! Go to Settings > Device Integrations to pair supported BLE sensors.' }
+    { q: 'How does the AI Scanner work?', a: 'Upload a clear close-up of a single leaf. A gatekeeper first checks the image shows a plant, then the trained disease model (38 PlantVillage crop-disease classes) predicts the most likely class. Low-confidence results are marked inconclusive — no diagnosis is invented. If the model has not been trained yet, the scanner says so explicitly.' },
+    { q: 'Where does my data live?', a: 'On your own backend database: plants, scan history, watering logs and health logs persist across restarts. Check the backend /api/health endpoint to confirm the service and the ML model status.' },
+    { q: 'Can I connect third-party sensors?', a: 'Not yet. Soil-moisture values in the app are the ones you enter yourself, and weather data comes from the Open-Meteo API only when coordinates are configured — otherwise clearly-labelled fallback values are used.' }
   ];
 
   return (
@@ -17,20 +18,20 @@ export default function Help() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="bg-card rounded-2xl p-6 shadow-sm border border-border text-center hover:shadow-md transition-shadow cursor-pointer">
+        <Link to="/assistant" className="bg-card rounded-2xl p-6 shadow-sm border border-border text-center hover:shadow-md transition-shadow cursor-pointer block">
           <MessageCircle className="w-10 h-10 text-primary mx-auto mb-4" />
-          <h3 className="font-bold mb-2">Live Chat</h3>
-          <p className="text-sm text-muted">Talk to an AI agronomist immediately.</p>
-        </div>
-        <div className="bg-card rounded-2xl p-6 shadow-sm border border-border text-center hover:shadow-md transition-shadow cursor-pointer">
+          <h3 className="font-bold mb-2">PlantAI Assistant</h3>
+          <p className="text-sm text-muted">Ask gardening questions, answered from your real plant data.</p>
+        </Link>
+        <div title="Care guides are not available yet" className="bg-card rounded-2xl p-6 shadow-sm border border-border text-center opacity-60 cursor-not-allowed">
           <BookOpen className="w-10 h-10 text-orange-500 mx-auto mb-4" />
           <h3 className="font-bold mb-2">Wiki & Guides</h3>
-          <p className="text-sm text-muted">Read our comprehensive plant care guides.</p>
+          <p className="text-sm text-muted">Coming soon.</p>
         </div>
-        <div className="bg-card rounded-2xl p-6 shadow-sm border border-border text-center hover:shadow-md transition-shadow cursor-pointer">
+        <div title="Video tutorials are not available yet" className="bg-card rounded-2xl p-6 shadow-sm border border-border text-center opacity-60 cursor-not-allowed">
           <Video className="w-10 h-10 text-blue-500 mx-auto mb-4" />
           <h3 className="font-bold mb-2">Video Tutorials</h3>
-          <p className="text-sm text-muted">Watch how to prune, repot, and scan.</p>
+          <p className="text-sm text-muted">Coming soon.</p>
         </div>
       </div>
 
